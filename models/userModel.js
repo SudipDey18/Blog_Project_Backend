@@ -7,7 +7,8 @@ const UsersTableCreate = async ()=>{
         Email VARCHAR(25),
         Password VARCHAR(150),
         Role VARCHAR(6),
-        Gender VARCHAR(6)
+        Gender VARCHAR(6),
+        PRIMARY KEY (UserId)
     )`
 
     await db.query(createTable);
@@ -25,7 +26,6 @@ const createUser = async (user,pass) => {
     }
         try{
             await db.query(Create_query, [user.Name, user.Email, pass, user.Role, user.Gender])
-            // const allUsers = await getAllUser();
             return {Message: "User created successfully"}
         }catch(error){ 
             return {Error: error};
@@ -53,7 +53,6 @@ const findUser = async (data)=>{
     if (isExist.Data > 0) {
         try {
             const userData = (await db.query(findUserQuery,[data]))[0];
-            // console.log(userData[0].Name);
             return {
                 User: userData[0],
             }
