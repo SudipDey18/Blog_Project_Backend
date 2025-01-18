@@ -72,6 +72,11 @@ const findUser = async (data)=>{
 }
 
 const isUserExists = async(user)=>{
+    try {
+        await UsersTableCreate();
+    } catch (error) {
+        return {Error: error};
+    }
  const isExistsQuery = `SELECT COUNT(*) AS count FROM Users WHERE Email = ?`;
  try {
     const [reasult] = await db.query(isExistsQuery,[user]);
