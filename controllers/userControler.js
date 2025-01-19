@@ -75,4 +75,4 @@ const Login = async(req,res) =>{
 }
 
 
-export default {isLogin,SignUp,Login, setCookie};
+export default {isLogin,SignUp,Login};
