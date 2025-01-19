@@ -4,12 +4,11 @@ import cookieParser from "cookie-parser";
 
 
 const route = (express.Router());
-const { isLogin, SignUp, Login, setCookie } = userController;
+const { isLogin, SignUp, Login} = userController;
 
 route.use(cookieParser());
 route.post('/signup',SignUp);
 route.post('/login',Login);
 route.get('/verify/:jwtToken',isLogin);
-route.get('/a',setCookie);
 
 export default route;
