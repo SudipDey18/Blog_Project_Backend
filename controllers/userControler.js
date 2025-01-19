@@ -75,12 +75,4 @@ const Login = async(req,res) =>{
 }
 
 
-
-
-const setCookie = (req,res)=>{
-    const tok = "req.cookies.Token"
-    res.cookie('Logo',tok);
-    res.send('Cookie saved');
-}
-
 export default {isLogin,SignUp,Login, setCookie};

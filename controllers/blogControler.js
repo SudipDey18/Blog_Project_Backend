@@ -1,6 +1,6 @@
 import blogModel from "../models/blogModel.js";
 
-const {createBlog, viewBlogs} = blogModel;
+const {createBlog, viewBlogs, getBlogData} = blogModel;
 
 const creatingBlog = async (req,res) => {
     try {
@@ -24,5 +24,19 @@ const getBlogs = async (req,res) => {
     }
 }
 
+const getBlog = async (req,res) => {
+    const id  = req.params.Id;
+    try {
+        const Data = await getBlogData(id);
+        if (Data.Error) {
+            return res.status(500).json({Error: "Internal Server Error"})
+        }
+        if (!Data.Blog.BlogId) return res.status(404).json({Error: "Requested Blog Not Found"});
+        return res.status(200).json({Blog: Data.Blog})
+    } catch (error) {
+        return res.status(404).json({Error: "Requested Blog Not Found"});
+    }
+}
 
-export default {creatingBlog,getBlogs}
+
+export default {creatingBlog,getBlogs,getBlog}

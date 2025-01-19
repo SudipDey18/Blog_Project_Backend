@@ -1,6 +1,6 @@
 import db from '../config/db.js';
 
-const UsersTableCreate = async ()=>{
+const UsersTableCreate = async () => {
     const createTable = `CREATE TABLE IF NOT EXISTS Users (
         UserId int NOT NULL AUTO_INCREMENT,
         Name VARCHAR(20),
@@ -14,7 +14,7 @@ const UsersTableCreate = async ()=>{
     await db.query(createTable);
 }
 
-const createUser = async (user,pass) => {
+const createUser = async (user, pass) => {
     const Create_query = `INSERT INTO Users
     (Name, Email, Password, Role, Gender)
     VALUES
@@ -22,37 +22,48 @@ const createUser = async (user,pass) => {
     try {
         await UsersTableCreate();
     } catch (error) {
-        return {Error: error};
+        return { Error: error };
     }
-        try{
-            await db.query(Create_query, [user.Name, user.Email, pass, user.Role, user.Gender])
-            return {Message: "User created successfully"}
-        }catch(error){ 
-            return {Error: error};
-        }
+    try {
+        await db.query(Create_query, [user.Name, user.Email, pass, user.Role, user.Gender])
+        return { Message: "User created successfully" }
+    } catch (error) {
+        return { Error: error };
+    }
 };
 
-const getAllUser = async() => {
+const getAllUser = async () => {
+    try {
+        await UsersTableCreate();
+    } catch (error) {
+        return { Error: error };
+    }
     try {
         const allUserQuery = `SELECT * FROM Users`
         const [users] = await db.query(allUserQuery);
-        return users; 
+        return users;
     } catch (error) {
         return error;
     }
 };
 
-const findUser = async (data)=>{
+const findUser = async (data) => {
     const findUserQuery = `SELECT * FROM Users WHERE Email = ?`;
-    const isExist = await isUserExists(data);
+    try {
+        await UsersTableCreate();
+    } catch (error) {
+        return { Error: error };
+    }
     
+    const isExist = await isUserExists(data);
+
     if (isExist.Error) return {
         code: 404,
         Error: "Something went wrong. Please try again later"
     }
     if (isExist.Data > 0) {
         try {
-            const userData = (await db.query(findUserQuery,[data]))[0];
+            const userData = (await db.query(findUserQuery, [data]))[0];
             return {
                 User: userData[0],
             }
@@ -62,7 +73,7 @@ const findUser = async (data)=>{
                 Error: "Something went wrong. Please try again later"
             }
         }
-    }else{
+    } else {
         return {
             code: 403,
             Error: "Invalid Email or Password"
@@ -70,21 +81,21 @@ const findUser = async (data)=>{
     }
 }
 
-const isUserExists = async(user)=>{
+const isUserExists = async (user) => {
     try {
         await UsersTableCreate();
     } catch (error) {
-        return {Error: error};
+        return { Error: error };
     }
- const isExistsQuery = `SELECT COUNT(*) AS count FROM Users WHERE Email = ?`;
- try {
-    const [reasult] = await db.query(isExistsQuery,[user]);
-    return {Data: reasult[0].count};
-    
- } catch (error) {
-    return {Error: error};
- }
+    const isExistsQuery = `SELECT COUNT(*) AS count FROM Users WHERE Email = ?`;
+    try {
+        const [reasult] = await db.query(isExistsQuery, [user]);
+        return { Data: reasult[0].count };
+
+    } catch (error) {
+        return { Error: error };
+    }
 }
 
 
-export default { createUser, getAllUser, findUser, isUserExists};
+export default { createUser, getAllUser, findUser, isUserExists };
