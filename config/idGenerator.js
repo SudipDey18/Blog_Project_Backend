@@ -1,9 +1,13 @@
-import { UniqueStringId,UniqueCharOTP} from 'unique-string-generator';
+import { UniqueStringId, UniqueCharOTP, UniqueNumberId } from 'unique-string-generator';
 
-const genId = () => {
+export const getBlogId = () => {
     let id = (UniqueStringId() + UniqueCharOTP())
-    console.log(id);
+    // console.log(id);
     return id;
 }
 
-export default {genId}
+
+export const getUserId = () => {
+    let id = UniqueNumberId();
+    return id;
+} 

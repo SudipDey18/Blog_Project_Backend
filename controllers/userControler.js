@@ -14,8 +14,8 @@ const isLogin = async (req,res) => {
         return res.send({isLogin: false});
     }
     const data = await verifyToken(token);
+    
     if (data.Message) {
-        // console.log(data.User);
         return res.send({
             isLogin: true,
             User: data.User
