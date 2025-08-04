@@ -8,7 +8,8 @@ const generateToken = (user) => {
         const token = jwt.sign({
             Name: user.Name,
             Email: user.Email,
-            Role: user.Role
+            Role: user.Role,
+            UserId: user.UserId
         }, process.env.SECRET_KEY);
         return {Token: token}   
     } catch (error) {
@@ -19,6 +20,7 @@ const generateToken = (user) => {
 const verifyToken = (token) => {
     try {
         const user = jwt.verify(token, process.env.SECRET_KEY);
+        
         return {
             Message: "User already login",
             User: user

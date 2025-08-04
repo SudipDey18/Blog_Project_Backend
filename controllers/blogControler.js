@@ -1,6 +1,6 @@
 import blogModel from "../models/blogModel.js";
 
-const {createBlog, viewBlogs, getBlogData} = blogModel;
+const { createBlog, viewBlogs, getBlogData, like, withdrawLike } = blogModel;
 
 const creatingBlog = async (req,res) => {
     try {
@@ -16,11 +16,10 @@ const getBlogs = async (req,res) => {
     try {
         const data = await viewBlogs();
         if(data.Error) return res.send({Error: "Somethig Went Wrong"});
-        // console.log(data.Blogs);
         
-        res.send({Blogs: data.Blogs});
+        return res.send({Blogs: data.Blogs});
     } catch (error) {
-        res.send({Error: "Somethig Went Wrong"});
+        return res.send({Error: "Somethig Went Wrong"});
     }
 }
 
@@ -38,5 +37,59 @@ const getBlog = async (req,res) => {
     }
 }
 
+const likeBlog = async (req,res) => {
+    const {BlogId, UserId} = req.body;
+    let BlogLikes = [];
+    if(typeof req.body.BlogLikes === "string"){
+        BlogLikes = JSON.parse(req.body.BlogLikes);
+    }    
+    
+    if (BlogLikes.includes(UserId)) {
+        
+        const index = BlogLikes.indexOf(UserId);   
+        
+        try {
+            const data = await withdrawLike({BlogId, index});
+            
+            if(data.Message) {
+                return res.status(200).json(data)
+            }else{
+                return res.status(500).json({Error: "Something Went wrong 1"});
+            }
 
-export default {creatingBlog,getBlogs,getBlog}
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({Error: "Something Went wrong 2"});
+        }
+        
+    }else {
+        try {
+            const data = await like({BlogId, UserId});
+            if(data.Message) {
+                return res.status(200).json(data);
+            }else{
+                return res.status(500).json({Error: "Something Went wrong 3"});
+            }
+
+        } catch (error) {
+            return res.status(500).json({Error: "Something Went wrong 4"});
+        }
+    }
+
+    // try {
+    //     data = await viewBlogs();
+    //     console.log(Message);
+    //     if(data.Error) return res.status(200).json({Message});
+        
+    //     return res.send({Blogs: data.Blogs, nunn: Math.random(), Message});
+    // } catch (error) {
+    //     return res.status(200).json({Message});
+    // }
+
+}
+
+export default {creatingBlog,getBlogs,getBlog, likeBlog}
+
+
+
+
