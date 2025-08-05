@@ -31,7 +31,7 @@ const getBlog = async (req,res) => {
             return res.status(500).json({Error: "Internal Server Error"})
         }
         if (!Data.Blog.BlogId) return res.status(404).json({Error: "Requested Blog Not Found"});
-        return res.status(200).json({Blog: Data.Blog})
+        return res.status(200).json({Blog: Data.Blog || []})
     } catch (error) {
         return res.status(404).json({Error: "Requested Blog Not Found"});
     }
