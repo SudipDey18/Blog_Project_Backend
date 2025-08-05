@@ -42,7 +42,9 @@ const likeBlog = async (req,res) => {
     let BlogLikes = [];
     if(typeof req.body.BlogLikes === "string"){
         BlogLikes = JSON.parse(req.body.BlogLikes);
-    }    
+    } else{
+        BlogLikes = req.body.BlogLikes;
+    }   
     
     if (BlogLikes.includes(UserId)) {
         
