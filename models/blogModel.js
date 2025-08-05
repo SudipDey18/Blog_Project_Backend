@@ -57,7 +57,7 @@ const viewBlogs = async () => {
 
     try {
         const blogs = await db.query(viewBlogsQuery);
-        return { Blogs: blogs[0] };
+        return { Blogs: blogs[0] || [] };
     } catch (error) {
         return ({ Error: error });
     }
@@ -72,7 +72,7 @@ const getBlogData = async (id) => {
     }
     try {
         const blog = (await db.query(getBlogQuery))[0];
-        return { Blog: blog[0] }
+        return { Blog: blog[0] || [] }
     } catch (error) {
         console.log(error);
         return { Error: error }
@@ -91,7 +91,7 @@ const like = async (data) => {
         const blogs = await db.query(`SELECT * FROM Blogs`);
         await db.query('COMMIT');
         // console.log("Sucess Like");
-        return { Message: "Liked Sucess", Blogs: blogs[0] };
+        return { Message: "Liked Sucess", Blogs: blogs[0] || [] };
     } catch (error) {
         console.log(error);
         await db.query('ROLLBACK');
@@ -109,7 +109,7 @@ const withdrawLike = async (data) => {
         await db.query(withdrawLikeQuery);
         const blogs = await db.query(`SELECT * FROM Blogs`);
         await db.query('COMMIT');
-        return { Message: "Like Withdraw Sucess", Blogs: blogs[0] }
+        return { Message: "Like Withdraw Sucess", Blogs: blogs[0] || [] }
     } catch (error) {
         console.log(error);
         await db.query('ROLLBACK');
