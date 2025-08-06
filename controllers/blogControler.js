@@ -1,6 +1,6 @@
 import blogModel from "../models/blogModel.js";
 
-const { createBlog, viewBlogs, getBlogData, like, withdrawLike } = blogModel;
+const { createBlog, viewBlogs, getBlogData, like, withdrawLike , deleteBlog } = blogModel;
 
 const creatingBlog = async (req,res) => {
     try {
@@ -42,7 +42,9 @@ const likeBlog = async (req,res) => {
     let BlogLikes = [];
     if(typeof req.body.BlogLikes === "string"){
         BlogLikes = JSON.parse(req.body.BlogLikes);
-    }    
+    } else{
+        BlogLikes = req.body.BlogLikes;
+    }
     
     if (BlogLikes.includes(UserId)) {
         
@@ -76,19 +78,24 @@ const likeBlog = async (req,res) => {
         }
     }
 
-    // try {
-    //     data = await viewBlogs();
-    //     console.log(Message);
-    //     if(data.Error) return res.status(200).json({Message});
-        
-    //     return res.send({Blogs: data.Blogs, nunn: Math.random(), Message});
-    // } catch (error) {
-    //     return res.status(200).json({Message});
-    // }
-
 }
 
-export default {creatingBlog,getBlogs,getBlog, likeBlog}
+const blogDelete = async (req,res) => {
+    
+    const {BlogId, OwnerId} = req.body;
+    try {
+        let Data = await deleteBlog({BlogId, OwnerId});
+        if(Data.ErrorMessage){
+            res.status(401).json({Message: Data.ErrorMessage})
+        }else{
+            res.status(200).json(Data);
+        }
+    } catch (error) {
+        res.status(500).json({Error: "Internal Server Error"});
+    }
+}
+
+export default {creatingBlog,getBlogs,getBlog, likeBlog, blogDelete}
 
 
 

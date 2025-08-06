@@ -1,31 +1,32 @@
 import db from '../config/db.js';
+import {getUserId} from '../config/idGenerator.js';
 
 const UsersTableCreate = async () => {
     const createTable = `CREATE TABLE IF NOT EXISTS Users (
-        UserId int NOT NULL AUTO_INCREMENT,
+        UserId VARCHAR(60) NOT NULL PRIMARY KEY,
         Name VARCHAR(20),
         Email VARCHAR(25),
         Password VARCHAR(150),
         Role VARCHAR(6),
-        Gender VARCHAR(6),
-        PRIMARY KEY (UserId)
+        Gender VARCHAR(6)
     )`
 
     await db.query(createTable);
 }
 
 const createUser = async (user, pass) => {
+    const userId = getUserId();
     const Create_query = `INSERT INTO Users
-    (Name, Email, Password, Role, Gender)
+    (UserId, Name, Email, Password, Role, Gender)
     VALUES
-    (?, ?, ?, ?, ?)`;
+    (?, ?, ?, ?, ?, ?)`;
     try {
         await UsersTableCreate();
     } catch (error) {
         return { Error: error };
     }
     try {
-        await db.query(Create_query, [user.Name, user.Email, pass, user.Role, user.Gender])
+        await db.query(Create_query, [ userId, user.Name, user.Email, pass, user.Role, user.Gender])
         return { Message: "User created successfully" }
     } catch (error) {
         return { Error: error };

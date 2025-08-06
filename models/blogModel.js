@@ -1,23 +1,34 @@
 import db from '../config/db.js'
-import {getBlogId} from '../config/idGenerator.js';
+import { getBlogId } from '../config/idGenerator.js';
 
-// const { genBlogId } = idGenerator;
-
-const createBlogsTable = async () => {
-    const createTableQuery = `CREATE TABLE IF NOT EXISTS Blogs(
+// Querys
+const createTableQuery = `CREATE TABLE IF NOT EXISTS Blogs(
         BlogId VARCHAR(60) NOT NULL PRIMARY KEY,
         Title VARCHAR(100),
         Content TEXT,
-        Writer VARCHAR(50) DEFAULT 'UNKNOWN',
-        Likes JSON DEFAULT ('[]')
+        OwnerId VARCHAR(60) NOT NULL,
+        Likes JSON DEFAULT ('[]'),
+        FOREIGN KEY (OwnerId) REFERENCES Users(UserId)
     )`;
 
-    await db.query(createTableQuery);
+const createBlogQuery = `INSERT INTO Blogs
+    (Title, Content, OwnerId, BlogId) VALUES ( ?, ?, ?, ?)`;
+
+const viewBlogsQuery = `SELECT Blogs.BlogId, Blogs.Title, Blogs.Content, Blogs.Likes, Users.UserId, Users.Name
+    FROM Blogs, Users
+    Where Blogs.OwnerId = Users.UserId`;
+
+
+// Executions
+const createBlogsTable = async () => {
+    try {
+        await db.query(createTableQuery);
+    } catch (error) {
+        throw error;
+    }
 }
 
 const createBlog = async (Blog) => {
-    const createBlogQuery = `INSERT INTO Blogs
-    (Title, Content, Writer, BlogId) VALUES ( ?, ?, ?, ?)`;
     let Id = '';
 
     try {
@@ -35,7 +46,7 @@ const createBlog = async (Blog) => {
 
 
     try {
-        await db.query(createBlogQuery, [Blog.Title, Blog.Content, Blog.User, Id])
+        await db.query(createBlogQuery, [Blog.Title, Blog.Content, Blog.OwnerId, Id])
         return { Message: "Blog Created Successfully" };
     } catch (error) {
         console.log(error);
@@ -45,7 +56,6 @@ const createBlog = async (Blog) => {
 }
 
 const viewBlogs = async () => {
-    const viewBlogsQuery = `SELECT * FROM Blogs`;
 
     try {
         await createBlogsTable();
@@ -59,12 +69,16 @@ const viewBlogs = async () => {
         const blogs = await db.query(viewBlogsQuery);
         return { Blogs: blogs[0] || [] };
     } catch (error) {
+        console.log(error);
+
         return ({ Error: error });
     }
 }
 
 const getBlogData = async (id) => {
-    const getBlogQuery = `SELECT * FROM Blogs WHERE BlogId = ${id};`
+    const getBlogQuery = `SELECT Blogs.BlogId, Blogs.Title, Blogs.Content, Blogs.Likes, Users.UserId, Users.Name
+    FROM Blogs, Users
+    WHERE Blogs.OwnerId = Users.UserId AND BlogId = ${id}`
     try {
         await createBlogsTable();
     } catch (error) {
@@ -72,6 +86,7 @@ const getBlogData = async (id) => {
     }
     try {
         const blog = (await db.query(getBlogQuery))[0];
+
         return { Blog: blog[0] || [] }
     } catch (error) {
         console.log(error);
@@ -80,15 +95,14 @@ const getBlogData = async (id) => {
 }
 
 const like = async (data) => {
-
     const likeQuery = `UPDATE Blogs
-        SET Likes = JSON_ARRAY_APPEND(Likes, '$', ${data.UserId})
+        SET Likes = JSON_ARRAY_APPEND(Likes, '$', '${data.UserId}')
         WHERE BlogId = '${data.BlogId}';`
 
     try {
         await db.query('START TRANSACTION');
         await db.query(likeQuery);
-        const blogs = await db.query(`SELECT * FROM Blogs`);
+        const blogs = await db.query(viewBlogsQuery);
         await db.query('COMMIT');
         // console.log("Sucess Like");
         return { Message: "Liked Sucess", Blogs: blogs[0] || [] };
@@ -107,7 +121,7 @@ const withdrawLike = async (data) => {
     try {
         await db.query('START TRANSACTION');
         await db.query(withdrawLikeQuery);
-        const blogs = await db.query(`SELECT * FROM Blogs`);
+        const blogs = await db.query(viewBlogsQuery);
         await db.query('COMMIT');
         return { Message: "Like Withdraw Sucess", Blogs: blogs[0] || [] }
     } catch (error) {
@@ -117,4 +131,25 @@ const withdrawLike = async (data) => {
     }
 }
 
-export default { createBlog, viewBlogs, getBlogData, like, withdrawLike }
+const deleteBlog = async (data) => {
+    const deleteBlogQuery = `DELETE FROM Blogs WHERE BlogId = '${data.BlogId}'`
+    const checkOwnerQuery = `SELECT OwnerId FROM Blogs WHERE BlogId = '${data.BlogId}' AND OwnerId = '${data.OwnerId}'`;
+
+    try {
+        let [blog] = (await db.query(checkOwnerQuery))[0];
+        // console.log(blog.BlogId);
+        if (blog.OwnerId == data.OwnerId) {
+            await db.query(deleteBlogQuery);
+            let Blogs = await db.query(viewBlogsQuery);
+            return ({ Message: 'Blog Deleted Sucessfully', Blogs: Blogs[0] || [] });
+        } else {
+            return ({ ErrorMessage: 'Unauthorized Access' });
+        }
+    } catch (error) {
+        console.log(error);
+
+        return ({ Error: 'Something Went Wrong' });
+    }
+}
+
+export default { createBlog, viewBlogs, getBlogData, like, withdrawLike, deleteBlog }
