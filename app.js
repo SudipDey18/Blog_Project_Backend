@@ -1,10 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import bodyParser from 'body-parser';
 import pool from './config/db.js';
 import userRouter from './routes/userRouter.js'
 import blogRouter from './routes/blogRouter.js'
+import emailRouter from './routes/emailRouter.js'
 
 
 import dotenv from "dotenv"
@@ -30,6 +30,7 @@ app.use(cookieParser());
 
 app.use('/user', userRouter);
 app.use('/blogs', blogRouter);
+app.use('/email',emailRouter);
 
 
 
