@@ -1,5 +1,8 @@
 import db from '../config/db.js';
-import {getUserId} from '../config/idGenerator.js';
+import { getUserId } from '../config/idGenerator.js';
+import emailSend from '../config/emailSend.js';
+
+const {welcomeMail} = emailSend;
 
 const UsersTableCreate = async () => {
     const createTable = `CREATE TABLE IF NOT EXISTS Users (
@@ -7,8 +10,7 @@ const UsersTableCreate = async () => {
         Name VARCHAR(20),
         Email VARCHAR(25),
         Password VARCHAR(150),
-        Role VARCHAR(6),
-        Gender VARCHAR(6)
+        Role VARCHAR(6)
     )`
 
     await db.query(createTable);
@@ -17,16 +19,19 @@ const UsersTableCreate = async () => {
 const createUser = async (user, pass) => {
     const userId = getUserId();
     const Create_query = `INSERT INTO Users
-    (UserId, Name, Email, Password, Role, Gender)
+    (UserId, Name, Email, Password, Role)
     VALUES
-    (?, ?, ?, ?, ?, ?)`;
+    (?, ?, ?, ?, ?)`;
+
     try {
         await UsersTableCreate();
     } catch (error) {
         return { Error: error };
     }
     try {
-        await db.query(Create_query, [ userId, user.Name, user.Email, pass, user.Role, user.Gender])
+        let response = await db.query(Create_query, [userId, user.Name, user.Email, pass, user.Role]);
+        // console.log("res"+response);
+        await welcomeMail({Email:user.Email,Name:user.Name});
         return { Message: "User created successfully" }
     } catch (error) {
         return { Error: error };
@@ -55,7 +60,7 @@ const findUser = async (data) => {
     } catch (error) {
         return { Error: error };
     }
-    
+
     const isExist = await isUserExists(data);
 
     if (isExist.Error) return {
@@ -82,7 +87,7 @@ const findUser = async (data) => {
     }
 }
 
-const isUserExists = async (user) => {
+const isUserExists = async (email) => {
     try {
         await UsersTableCreate();
     } catch (error) {
@@ -90,13 +95,26 @@ const isUserExists = async (user) => {
     }
     const isExistsQuery = `SELECT COUNT(*) AS count FROM Users WHERE Email = ?`;
     try {
-        const [reasult] = await db.query(isExistsQuery, [user]);
-        return { Data: reasult[0].count };
+        const [result] = await db.query(isExistsQuery, [email]);
+        // console.log(result);
+
+        return { Data: result[0].count };
 
     } catch (error) {
         return { Error: error };
     }
 }
 
+const updatePassword = async (email, pass) => {
+    let passUpdateQuery = `UPDATE Users
+        SET Password = ?
+        WHERE Email = ?`;
+    try {
+        await db.query(passUpdateQuery, [pass,email]);
+        return { Message: "Password update sucessfully" };
+    } catch (error) {
+        return { error }
+    }
+}
 
-export default { createUser, getAllUser, findUser, isUserExists };
+export default { createUser, getAllUser, findUser, isUserExists, updatePassword };
